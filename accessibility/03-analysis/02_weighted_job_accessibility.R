@@ -115,7 +115,7 @@ access_map <- wrap_plots(map_plots, ncol = 2) +
     ),
     caption = paste0(
       "Median travel times for departures from 7:00–8:59 a.m. on July 13, 2026; ",
-      "GTFS and OSM snapshots: June 25, 2026"
+      "GTFS snapshot: June 25, 2026; OSM snapshot: June 1, 2026"
     ),
     theme = theme(plot.title = element_text(face = "bold"))
   )

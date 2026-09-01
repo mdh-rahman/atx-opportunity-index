@@ -34,16 +34,17 @@ gtfs_source_filename <- "capmetro_gtfs_source_20260625.zip"
 gtfs_filename <- "capmetro_gtfs_r5_20260625.zip"
 gtfs_source_sha256 <- "9d0ef3a61f1a7aa7b675a0f6849803043f4fedafb89365df01c8a19c9585a3cb"
 
-# Dated Geofabrik snapshot aligned with the GTFS archive date. The statewide
-# source is clipped to a Central Texas bounding box before R5 network setup.
-osm_snapshot_date <- "2026-06-25"
+# Geofabrik's June 2026 Texas archive is a monthly snapshot dated June 1; no
+# June 25 Texas archive exists. The statewide source is clipped to a Central
+# Texas bounding box before R5 network setup.
+osm_snapshot_date <- "2026-06-01"
 osm_url <- paste0(
   "https://download.geofabrik.de/north-america/us/",
-  "texas-260625.osm.pbf"
+  "texas-260601.osm.pbf"
 )
-osm_filename <- "central_texas_osm_20260625.osm.pbf"
+osm_filename <- "central_texas_osm_20260601.osm.pbf"
 osm_bbox <- "-98.50,29.30,-96.50,31.20"
-osm_sha256 <- "3252f7a533056ba4f16f3d76eb8768e024deef048c4f47b8fc612103c5155054"
+osm_sha256 <- "3caed88ecba62262025965913c437b14fe132dc0b95bc9ab11527fa6a5548dbf"
 
 # A typical Monday morning within the pinned GTFS service window. The
 # two-hour window represents departures from 7:00 through 8:59 a.m.
@@ -53,6 +54,17 @@ access_cutoff_minutes <- 45L
 max_walk_minutes <- 30L
 max_trip_minutes <- 60L
 travel_time_percentile <- 50L
+
+# Automobile accessibility uses the same H8 origins, LODES destinations, and
+# pinned OSM network as the transit measure. Multiple thresholds support a
+# sensitivity check; 45 minutes is the primary transit-comparable measure.
+auto_access_cutoffs_minutes <- c(15L, 30L, 45L, 60L)
+auto_primary_cutoff_minutes <- 45L
+auto_max_trip_minutes <- max(auto_access_cutoffs_minutes)
+auto_smoke_test_origins <- 10L
+auto_n_threads <- 2L
+auto_batch_size <- 50L
+auto_draws_per_minute <- 1L
 
 accessibility_root <- "accessibility"
 accessibility_data_dir <- file.path(accessibility_root, "data")
@@ -81,6 +93,10 @@ lodes_tract_function_path <- file.path(
 accessibility_output_path <- file.path(
   output_dir,
   paste0("h", h3_resolution, "_job_accessibility.csv")
+)
+auto_accessibility_output_path <- file.path(
+  output_dir,
+  paste0("h", h3_resolution, "_auto_job_accessibility.csv")
 )
 origins_path <- file.path(
   processed_access_dir,

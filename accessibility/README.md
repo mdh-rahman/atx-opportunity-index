@@ -3,6 +3,13 @@
 This pipeline calculates walk-plus-transit access to jobs for H3 resolution 8
 cells whose centers fall inside the City of Austin boundary.
 
+It also contains a parallel automobile-accessibility workflow. Automobile
+access uses the same H8 origins, five-county LODES job destinations, resident-
+worker weights, and pinned OSM snapshot. It reports modeled road-network access
+at 15-, 30-, 45-, and 60-minute thresholds. It does not include observed or
+historical traffic congestion and must not be described as congested peak-hour
+travel time.
+
 For the submitted Methods and Data Report, this pipeline is an upstream data
 source rather than the reported cluster analysis itself. Step 20 aggregates
 the H8 results to the shared tract file, and
@@ -21,7 +28,8 @@ available employment distribution**, because source release schedules differ.
 - Jobs and resident workers: 2023 LODES WAC and RAC
 - City boundary: 2024 TIGER/Line place boundary
 - Transit: CapMetro GTFS snapshot fetched June 25, 2026
-- Streets: Geofabrik/OpenStreetMap snapshot dated June 25, 2026
+- Streets: Geofabrik/OpenStreetMap Texas monthly snapshot dated June 1, 2026,
+  clipped to Central Texas (Geofabrik did not publish a June 25 Texas archive)
 - Analysis date: Monday, July 13, 2026
 - Departure window: 7:00–8:59 a.m.
 - Accessibility threshold: 45 minutes
@@ -71,7 +79,26 @@ Rscript accessibility/01-setup/02_pull_osm_network.R
 Rscript accessibility/02-data-processing/01_pull_lodes_wac_jobs.R
 Rscript accessibility/03-analysis/01_unweighted_job_accessibility.R
 Rscript accessibility/03-analysis/02_weighted_job_accessibility.R
+Rscript accessibility/03-analysis/03_auto_job_accessibility.R
+Rscript accessibility/03-analysis/04_auto_job_accessibility_summary.R
 ```
+
+Before the complete automobile run, use the ten-origin smoke test:
+
+```sh
+AUTO_SMOKE_TEST=true Rscript accessibility/03-analysis/03_auto_job_accessibility.R
+```
+
+The smoke test writes a separate `_smoke_test.csv` and never overwrites the
+complete automobile result.
+
+Automobile routing defaults to two R5 threads and batches of 50 origins to keep
+Java memory use stable on a typical research laptop. Completed full-run batches
+are stored under ignored processed data and reused automatically after an
+interruption. Change `auto_n_threads` or `auto_batch_size` in `config.R` only
+after a successful smoke test and while monitoring available memory.
+The CAR network has no stochastic congestion component, so the workflow uses
+one draw per minute rather than repeating identical road-network searches.
 
 The directory prefixes identify the accessibility phase; filename prefixes
 give the order within each phase. Unnumbered files such as `config.R`,
@@ -95,6 +122,14 @@ unless the GTFS, OSM, or `r5r` version recorded in the input manifest changes.
 - `h8_job_accessibility_summary.csv`: resident-worker-weighted and unweighted
   summaries
 - `h8_job_accessibility_map.png`: four-panel accessibility map
+- `h8_auto_job_accessibility.csv`: H8 automobile access at 15, 30, 45, and 60
+  minutes for all and wage-specific jobs
+- `h8_auto_job_accessibility_summary.csv`: resident-worker-weighted and
+  unweighted automobile summaries by cutoff and job type
+- `h8_auto_job_accessibility_map.png`: four-panel map for the primary
+  45-minute automobile measure
+- `h8_auto_job_accessibility_sensitivity.png`: weighted all-jobs sensitivity
+  across the four automobile cutoffs
 - `austin_tract_functional_role_2023.csv`: tract jobs, resident workers,
   job-worker balance, and total local activity for the experimental clustering
   analysis

@@ -35,12 +35,19 @@ Rscript accessibility/01-setup/02_pull_osm_network.R
 Rscript accessibility/02-data-processing/01_pull_lodes_wac_jobs.R
 Rscript accessibility/03-analysis/01_unweighted_job_accessibility.R
 Rscript accessibility/03-analysis/02_weighted_job_accessibility.R
+Rscript accessibility/03-analysis/03_auto_job_accessibility.R
+Rscript accessibility/03-analysis/04_auto_job_accessibility_summary.R
 ```
 
 The two `01-setup` downloads are independent, but their numbering provides a
 consistent order. Both must finish before the routing analysis. The LODES step
 must precede both accessibility-analysis steps, and the weighted summary must
 follow the unweighted routing calculation.
+
+The automobile steps reuse the LODES products, H8 origins, and pinned OSM
+network. They write separate outputs and do not alter the transit results.
+Step 03 supports a ten-origin smoke test with `AUTO_SMOKE_TEST=true`; step 04
+should run only after the complete automobile calculation.
 
 ### 10–15 — Place, exposure, and candidate inputs
 
