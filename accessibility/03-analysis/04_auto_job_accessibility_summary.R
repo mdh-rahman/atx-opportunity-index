@@ -35,17 +35,17 @@ measure_config <- tibble(
 )
 
 summary_table <- crossing(
-  cutoff = sort(unique(access_workers$cutoff)),
+  cutoff_value = sort(unique(access_workers$cutoff)),
   measure_config
 ) %>%
-  pmap_dfr(function(cutoff, access_column, worker_column, job_type) {
-    cutoff_data <- filter(access_workers, .data$cutoff == cutoff)
+  pmap_dfr(function(cutoff_value, access_column, worker_column, job_type) {
+    cutoff_data <- filter(access_workers, .data$cutoff == cutoff_value)
     values <- cutoff_data[[access_column]]
     weights <- cutoff_data[[worker_column]]
     valid <- !is.na(values) & weights > 0
 
     tibble(
-      cutoff = cutoff,
+      cutoff = cutoff_value,
       job_type = job_type,
       weighted_mean = if (any(valid)) weighted.mean(values[valid], weights[valid]) else NA_real_,
       unweighted_mean = mean(values, na.rm = TRUE),
